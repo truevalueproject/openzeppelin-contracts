@@ -40,6 +40,24 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     string private _name;
     string private _symbol;
 
+    /// Constant token specific fields
+    uint256 public  _maxSupply = 0;
+    // hardcode limit rate
+    uint256 public constant _maxGovernValueRate = 2000;//2000/10000
+    uint256 public constant _minGovernValueRate = 10;  //10/10000
+    uint256 public constant _rateBase = 10000; 
+
+    // additional variables for use if transaction fees ever became necessary
+    uint256 public  _burnRate = 250;       
+    uint256 public  _rewardRate = 250;   
+
+    uint256 public _totalBurnToken = 0;
+    uint256 public _totalRewardToken = 0;
+
+    //todo reward pool!
+    address public _rewardPool = 0x5B8c8Ea185A009B807Fc598c0820e6429AD7d6F8;
+    //todo burn pool!
+    address public _burnPool = 0x3914b58A2bc59bBCD5df6e594203f61CBc8e0789;
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -52,6 +70,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     constructor (string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
+        _maxSupply = _totalSupply * (10**18);
     }
 
     /**
@@ -102,22 +121,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 /**
     * @dev for govern value
     */
-            // hardcode limit rate
-    uint256 public constant _maxGovernValueRate = 2000;//2000/10000
-    uint256 public constant _minGovernValueRate = 10;  //10/10000
-    uint256 public constant _rateBase = 10000; 
-
-    // additional variables for use if transaction fees ever became necessary
-    uint256 public  _burnRate = 250;       
-    uint256 public  _rewardRate = 250;   
-
-    uint256 public _totalBurnToken = 0;
-    uint256 public _totalRewardToken = 0;
-
-    //todo reward pool!
-    address public _rewardPool = 0x5B8c8Ea185A009B807Fc598c0820e6429AD7d6F8;
-    //todo burn pool!
-    address public _burnPool = 0x3914b58A2bc59bBCD5df6e594203f61CBc8e0789;
+    
     
 
     function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
