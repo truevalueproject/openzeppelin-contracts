@@ -57,7 +57,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     //todo reward pool!
     address public _rewardPool = 0x5B8c8Ea185A009B807Fc598c0820e6429AD7d6F8;
     //todo burn pool!
-    address public _burnPool = 0x0000000000000000000000000000000000000000;
+    address public _burnPool = 0x000000000000000000000000000000000000dEaD;
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
