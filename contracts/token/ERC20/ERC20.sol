@@ -70,7 +70,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     constructor (string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
-        _maxSupply = _totalSupply * (10**18);
+        _maxSupply = 100000000 * (10**18);
     }
 
     /**
