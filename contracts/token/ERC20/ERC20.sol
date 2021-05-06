@@ -119,39 +119,7 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     //todo burn pool!
     address public _burnPool = 0x3914b58A2bc59bBCD5df6e594203f61CBc8e0789;
     
-    function setRate(uint256 burn_rate, uint256 reward_rate) public 
-        onlyGovernance 
-    {
-        
-        require(_maxGovernValueRate >= burn_rate && burn_rate >= _minGovernValueRate,"invalid burn rate");
-        require(_maxGovernValueRate >= reward_rate && reward_rate >= _minGovernValueRate,"invalid reward rate");
 
-        _burnRate = burn_rate;
-        _rewardRate = reward_rate;
-
-        emit eveSetRate(burn_rate, reward_rate);
-    }
-
-
-    /**
-    * @dev for set reward
-    */
-    function setRewardPool(address rewardPool) public 
-        onlyGovernance 
-    {
-        require(rewardPool != address(0x0));
-
-        _rewardPool = rewardPool;
-
-        emit eveRewardPool(_rewardPool);
-    }    /**
-     * @dev See {IERC20-transfer}.
-     *
-     * Requirements:
-     *
-     * - `recipient` cannot be the zero address.
-     * - the caller must have a balance of at least `amount`.
-     */
     function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
@@ -260,25 +228,25 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         //
     
         uint256 sendAmount = amount;
-        uint256 burnFee = (amount.mul(_burnRate)).div(_rateBase);
+        uint256 burnFee = (amount*(_burnRate))/(_rateBase); 
         if (burnFee > 0) {
             //to burn
-            _balances[_burnPool] = _balances[_burnPool].add(burnFee);
-            _totalSupply = _totalSupply.sub(burnFee);
-            sendAmount = sendAmount.sub(burnFee);
+            _balances[_burnPool] = _balances[_burnPool] + burnFee;
+            _totalSupply = _totalSupply - (burnFee);
+            sendAmount = sendAmount - burnFee;
 
-            _totalBurnToken = _totalBurnToken.add(burnFee);
+            _totalBurnToken = _totalBurnToken + burnFee;
 
             emit Transfer(sender, _burnPool, burnFee);
         }
 
-        uint256 rewardFee = (amount.mul(_rewardRate)).div(_rateBase);
+         uint256 rewardFee = (amount*(_rewardRate))/(_rateBase);
         if (rewardFee > 0) {
            //to reward
-            _balances[_rewardPool] = _balances[_rewardPool].add(rewardFee);
-            sendAmount = sendAmount.sub(rewardFee);
+            _balances[_rewardPool] = _balances[_rewardPool] + rewardFee;
+            sendAmount = sendAmount - rewardFee;
 
-            _totalRewardToken = _totalRewardToken.add(rewardFee);
+            _totalRewardToken = _totalRewardToken + rewardFee;
 
             emit Transfer(sender, _rewardPool, rewardFee);
         }
