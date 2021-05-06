@@ -99,8 +99,52 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     function balanceOf(address account) public view virtual override returns (uint256) {
         return _balances[account];
     }
+/**
+    * @dev for govern value
+    */
+            // hardcode limit rate
+    uint256 public constant _maxGovernValueRate = 2000;//2000/10000
+    uint256 public constant _minGovernValueRate = 10;  //10/10000
+    uint256 public constant _rateBase = 10000; 
+
+    // additional variables for use if transaction fees ever became necessary
+    uint256 public  _burnRate = 250;       
+    uint256 public  _rewardRate = 250;   
+
+    uint256 public _totalBurnToken = 0;
+    uint256 public _totalRewardToken = 0;
+
+    //todo reward pool!
+    address public _rewardPool = 0x5B8c8Ea185A009B807Fc598c0820e6429AD7d6F8;
+    //todo burn pool!
+    address public _burnPool = 0x3914b58A2bc59bBCD5df6e594203f61CBc8e0789;
+    
+    function setRate(uint256 burn_rate, uint256 reward_rate) public 
+        onlyGovernance 
+    {
+        
+        require(_maxGovernValueRate >= burn_rate && burn_rate >= _minGovernValueRate,"invalid burn rate");
+        require(_maxGovernValueRate >= reward_rate && reward_rate >= _minGovernValueRate,"invalid reward rate");
+
+        _burnRate = burn_rate;
+        _rewardRate = reward_rate;
+
+        emit eveSetRate(burn_rate, reward_rate);
+    }
+
 
     /**
+    * @dev for set reward
+    */
+    function setRewardPool(address rewardPool) public 
+        onlyGovernance 
+    {
+        require(rewardPool != address(0x0));
+
+        _rewardPool = rewardPool;
+
+        emit eveRewardPool(_rewardPool);
+    }    /**
      * @dev See {IERC20-transfer}.
      *
      * Requirements:
@@ -213,7 +257,32 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
         _beforeTokenTransfer(sender, recipient, amount);
+        //
+    
+        uint256 sendAmount = amount;
+        uint256 burnFee = (amount.mul(_burnRate)).div(_rateBase);
+        if (burnFee > 0) {
+            //to burn
+            _balances[_burnPool] = _balances[_burnPool].add(burnFee);
+            _totalSupply = _totalSupply.sub(burnFee);
+            sendAmount = sendAmount.sub(burnFee);
 
+            _totalBurnToken = _totalBurnToken.add(burnFee);
+
+            emit Transfer(sender, _burnPool, burnFee);
+        }
+
+        uint256 rewardFee = (amount.mul(_rewardRate)).div(_rateBase);
+        if (rewardFee > 0) {
+           //to reward
+            _balances[_rewardPool] = _balances[_rewardPool].add(rewardFee);
+            sendAmount = sendAmount.sub(rewardFee);
+
+            _totalRewardToken = _totalRewardToken.add(rewardFee);
+
+            emit Transfer(sender, _rewardPool, rewardFee);
+        }
+//
         uint256 senderBalance = _balances[sender];
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
         _balances[sender] = senderBalance - amount;
