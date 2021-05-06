@@ -286,9 +286,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         uint256 senderBalance = _balances[sender];
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
         _balances[sender] = senderBalance - amount;
-        _balances[recipient] += amount;
+        _balances[recipient] += sendAmount;
 
-        emit Transfer(sender, recipient, amount);
+        emit Transfer(sender, recipient, sendAmount);
     }
 
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
