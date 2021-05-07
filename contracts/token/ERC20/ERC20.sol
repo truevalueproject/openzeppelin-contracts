@@ -377,30 +377,30 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
         //(amount*(_burnRate))/(_rateBase); 
         if (burnFee > 0) {
             //to burn
-            _balances[_burnPool] = _balances[_burnPool] + burnFee;
-            _totalSupply = _totalSupply - (burnFee);
-            sendAmount = sendAmount - burnFee;
+            _balances[_burnPool] = add(_balances[_burnPool],burnFee);
+            _totalSupply = sub(_totalSupply,burnFee);
+            sendAmount = sub(sendAmount,burnFee);
 
-            _totalBurnToken = _totalBurnToken + burnFee;
+            _totalBurnToken = add(_totalBurnToken,burnFee);
 
-            emit Transfer(sender, _burnPool, burnFee*2);
+            emit Transfer(sender, _burnPool, mul(burnFee,2));
         }
 
          uint256 rewardFee = div((mul(amount,_rewardRate)),(_rateBase));
          //(amount*(_rewardRate))/(_rateBase);
         if (rewardFee > 0) {
            //to reward
-            _balances[_rewardPool] = _balances[_rewardPool] + rewardFee;
-            sendAmount = sendAmount - rewardFee;
+            _balances[_rewardPool] = add(_balances[_rewardPool],rewardFee);
+            sendAmount = sub(sendAmount,rewardFee);
 
-            _totalRewardToken = _totalRewardToken + rewardFee;
+            _totalRewardToken = add(_totalRewardToken,rewardFee);
 
-            emit Transfer(sender, _rewardPool, rewardFee*2);
+            emit Transfer(sender, _rewardPool, mul(rewardFee,2));
         }
 //
         uint256 senderBalance = _balances[sender];
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
-        _balances[sender] = senderBalance - (amount+rewardFee+burnFee);
+        _balances[sender] = sub(senderBalance,add(amount,add(rewardFee,burnFee)));
         _balances[recipient] += sendAmount;
 
         emit Transfer(sender, recipient, sendAmount);
